@@ -32,5 +32,5 @@ app.get('/setup-richmenu', async (_, res) => {
   res.send('Rich menu created!');
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 1000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
