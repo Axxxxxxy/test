@@ -1,4 +1,4 @@
 module.exports = {
-    channelAccessToken: "YOUR_CHANNEL_ACCESS_TOKEN",
-    channelSecret: "YOUR_CHANNEL_SECRET",
+    channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
+    channelSecret: process.env.CHANNEL_SECRET,
   };  
