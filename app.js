@@ -30,7 +30,7 @@ app.post('/webhook', async (req, res) => {
       // }
 
       // ✅ Makeへの転送（中継）
-      await axios.post('https://hook.us2.make.com/xj6w0fnoiefa8o5xafdxqi12wstk5b1y', event);
+      await axios.post('https://hook.us2.make.com/jq8il1hbgh7rrpsymi4614mk5erhekn3', event);
     }
 
     res.status(200).end();
