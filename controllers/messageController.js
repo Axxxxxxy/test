@@ -1,5 +1,5 @@
 const lineService = require("../services/lineService");
-const { saveConversationLog } = require("./logService");
+const { saveConversationLog } = require("../services/logService");
 
 // クイックリプライ送信用関数
 const sendQuickReply = async (replyToken) => {
