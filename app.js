@@ -1,16 +1,9 @@
-// import 'dotenv/config';              // ① 環境変数
-// import express from 'express';       // ② express 本体
-// import bodyParser from 'body-parser';
-
-// ↓ こちらだけ残す（CommonJS 形式）
 require('dotenv').config();      // 環境変数読み込み
 const express = require('express');
 const bodyParser = require('body-parser');
 
-// import { sendQuickReply }   from './controllers/messageController.js';
-// import { createRichMenu }   from './controllers/richMenuController.js';
 const { sendQuickReply } = require('./controllers/messageController');
-const { createRichMenu } = require('./controllers/richMenuController');
+const { setupRichMenuA, setupRichMenuB } = require('./controllers/richMenuController');
 
 const app = express();
 app.use(bodyParser.json());
@@ -18,18 +11,32 @@ app.use(bodyParser.json());
 // LINE から Webhook が届く入り口
 app.post('/webhook', async (req, res) => {
   const events = req.body.events || [];
+
   for (const event of events) {
-    if (event.replyToken) {
+    // STEP 4: postbackアクション（例：FAQ）を判定
+    if (event.type === 'postback' && event.postback?.data === 'action=show_faq') {
       await sendQuickReply(event.replyToken);
     }
+
+    // それ以外の通常メッセージ応答
+    else if (event.type === 'message' && event.replyToken) {
+      await sendQuickReply(event.replyToken); // 今回は統一的にクイックリプライを返す仕様
+    }
   }
+
   res.status(200).end();
 });
 
-// （初回だけ）リッチメニュー作りたいときに叩く
-app.get('/setup-richmenu', async (_, res) => {
-  await createRichMenu();
-  res.send('Rich menu created!');
+// A面メニューの初期化
+app.get('/setup-richmenu-a', async (_, res) => {
+  const id = await setupRichMenuA();
+  res.send(`Rich menu A created: ${id}`);
+});
+
+// B面メニューの初期化
+app.get('/setup-richmenu-b', async (_, res) => {
+  const id = await setupRichMenuB();
+  res.send(`Rich menu B created: ${id}`);
 });
 
 const PORT = process.env.PORT || 1000;
