@@ -1,45 +1,29 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const axios = require('axios');
 
-const { sendQuickReply } = require('./controllers/messageController');
 const { setupRichMenuA, setupRichMenuB } = require('./controllers/richMenuController');
-const lineService = require('./services/lineService');
+const { handleLineEvent, createRichMenuAlias } = require('./services/lineService');
 
 const app = express();
 app.use(bodyParser.json());
 
+// LINE Webhookエンドポイント
 app.post('/webhook', async (req, res) => {
   try {
     const events = req.body.events || [];
-
     for (const event of events) {
-      console.log("Received event:", JSON.stringify(event));
-
-      // ✅ FAQ用postbackボタンのみクイックリプライを返す
-      if (event.type === 'postback' && event.postback?.data === 'action=show_faq') {
-        if (event.replyToken) {
-          await sendQuickReply(event.replyToken);
-        }
-      }
-
-      // ✅ 通常メッセージはここで何も返さない（反応しない）
-      // if (event.type === 'message' && event.replyToken) {
-      //   await sendQuickReply(event.replyToken);
-      // }
-
-      // ✅ Makeへの転送（中継）
-      await axios.post('https://hook.us2.make.com/jq8il1hbgh7rrpsymi4614mk5erhekn3', event);
+      // 各イベントを処理（分岐ロジックはlineService内に集約）
+      await handleLineEvent(event);
     }
-
     res.status(200).end();
   } catch (error) {
-    console.error("Webhook error:", error.response?.data || error.message);
+    console.error("Webhook error:", error.message);
     res.status(500).end();
   }
 });
 
+// A面リッチメニューを作成
 app.get('/setup-richmenu-a', async (_, res) => {
   try {
     const id = await setupRichMenuA();
@@ -50,6 +34,7 @@ app.get('/setup-richmenu-a', async (_, res) => {
   }
 });
 
+// B面リッチメニューを作成
 app.get('/setup-richmenu-b', async (_, res) => {
   try {
     const id = await setupRichMenuB();
@@ -60,17 +45,18 @@ app.get('/setup-richmenu-b', async (_, res) => {
   }
 });
 
+// A/B面のリッチメニューとエイリアスを作成
 app.get('/setup-richmenu-alias', async (_, res) => {
   try {
     const idA = await setupRichMenuA();
     const idB = await setupRichMenuB();
 
-    await lineService.createRichMenuAlias("menu_a", idA);
-    await lineService.createRichMenuAlias("menu_b", idB);
+    await createRichMenuAlias("menu_a", idA);
+    await createRichMenuAlias("menu_b", idB);
 
     res.send(`RichMenu A/B created & aliases set. A: ${idA}, B: ${idB}`);
   } catch (err) {
-    console.error("Alias setup error:", err.response?.data || err.message);
+    console.error("Alias setup error:", err.message);
     res.status(500).send("Failed to create alias");
   }
 });
