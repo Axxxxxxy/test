@@ -1,19 +1,23 @@
 const axios = require('axios');
 
 const callDify = async (userMessage, userId) => {
-  try {
-    const response = await axios.post(process.env.DIFY_API_URL, {
-      inputs: {
-        LLM_input: userMessage
-      },
-      response_mode: 'blocking',
-      user: userId
-    }, {
-      headers: {
-        Authorization: `Bearer ${process.env.DIFY_API_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    });
+    try {
+      const response = await axios.post(
+        `${process.env.DIFY_API_URL}/workflows/run`,  // ← 🔴 ここが足りてなかった！
+        {
+          inputs: {
+            LLM_input: userMessage
+          },
+          response_mode: 'blocking',
+          user: userId
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.DIFY_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
 
     return response.data.data.outputs.text;
   } catch (error) {
