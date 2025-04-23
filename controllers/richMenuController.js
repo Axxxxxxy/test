@@ -3,16 +3,16 @@ const lineService = require("../services/lineService");
 
 // A面のリッチメニュー作成
 const setupRichMenuA = async () => {
+  console.log("STEP 1: リッチメニューA作成処理 開始");
+
   const richMenu = {
     name: "メニューA",
     chatBarText: "メニューを開く",
     size: { width: 2500, height: 1686 },
     selected: true,
     areas: [
-      // 上部：タブ切り替え
       { bounds: { x: 0, y: 0, width: 1250, height: 201 }, action: { type: "richmenuswitch", richMenuAliasId: "menu_a", data: "switch_to_service" } },
       { bounds: { x: 1250, y: 0, width: 1250, height: 201 }, action: { type: "richmenuswitch", richMenuAliasId: "menu_b", data: "switch_to_chat" } },
-      // 下部：リンクエリア
       { bounds: { x: 0, y: 201, width: 1486, height: 1485 }, action: { type: "uri", uri: "https://www.mothersgroup.jp/" } },
       { bounds: { x: 1486, y: 201, width: 1014, height: 495 }, action: { type: "uri", uri: "https://paypay.ne.jp/" } },
       { bounds: { x: 1486, y: 696, width: 1014, height: 495 }, action: { type: "uri", uri: "https://www.softbank.jp/" } },
@@ -20,37 +20,39 @@ const setupRichMenuA = async () => {
     ]
   };
 
-  // リッチメニューを作成
-  const result = await lineService.createRichMenu(richMenu);
-  const richMenuId = result.richMenuId;
-  console.log("RichMenu A created:", richMenuId);
+  try {
+    const result = await lineService.createRichMenu(richMenu);
+    const richMenuId = result.richMenuId;
+    console.log("STEP 2: RichMenu A 作成完了:", richMenuId);
 
-  // 画像ファイルをアップロード（assets/richmenuA.png）
-  const uploadResult = await lineService.uploadRichMenuImage(
-    richMenuId,
-    path.resolve(__dirname, "../assets/richmenuA.png")
-  );
-  console.log("Image uploaded for RichMenu A:", uploadResult);
+    const imagePath = path.resolve(__dirname, "../assets/richmenuA.png");
+    console.log("STEP 3: 画像パス:", imagePath);
 
-  // このリッチメニューをデフォルトとして設定（全ユーザーに表示）
-  const defaultResult = await lineService.setDefaultRichMenu(richMenuId);
-  console.log("Default RichMenu set for all users (A):", defaultResult);
+    const uploadResult = await lineService.uploadRichMenuImage(richMenuId, imagePath);
+    console.log("STEP 4: RichMenu A 画像アップロード成功:", uploadResult);
 
-  return richMenuId;
+    const defaultResult = await lineService.setDefaultRichMenu(richMenuId);
+    console.log("STEP 5: RichMenu A デフォルト設定完了:", defaultResult);
+
+    return richMenuId;
+  } catch (error) {
+    console.error("❌ RichMenu A 作成中にエラー:", error.response?.data || error.message || error);
+    throw error;
+  }
 };
 
 // B面のリッチメニュー作成
 const setupRichMenuB = async () => {
+  console.log("STEP 1: リッチメニューB作成処理 開始");
+
   const richMenu = {
     name: "メニューB",
     chatBarText: "メニューを開く",
     size: { width: 2500, height: 1686 },
     selected: true,
     areas: [
-      // 上部：タブ切り替え
       { bounds: { x: 0, y: 0, width: 1250, height: 201 }, action: { type: "richmenuswitch", richMenuAliasId: "menu_a", data: "switch_to_service" } },
       { bounds: { x: 1250, y: 0, width: 1250, height: 201 }, action: { type: "richmenuswitch", richMenuAliasId: "menu_b", data: "switch_to_chat" } },
-      // 下部：リンクおよびFAQアクション
       { bounds: { x: 0, y: 201, width: 833, height: 743 }, action: { type: "uri", uri: "https://example.com/no-action" } },
       { bounds: { x: 833, y: 201, width: 833, height: 743 }, action: { type: "uri", uri: "https://example.com/no-action" } },
       { bounds: { x: 1666, y: 201, width: 834, height: 743 }, action: { type: "uri", uri: "https://example.com/no-action" } },
@@ -60,20 +62,22 @@ const setupRichMenuB = async () => {
     ]
   };
 
-  // リッチメニューを作成
-  const result = await lineService.createRichMenu(richMenu);
-  const richMenuId = result.richMenuId;
-  console.log("RichMenu B created:", richMenuId);
+  try {
+    const result = await lineService.createRichMenu(richMenu);
+    const richMenuId = result.richMenuId;
+    console.log("STEP 2: RichMenu B 作成完了:", richMenuId);
 
-  // 画像ファイルをアップロード（assets/richmenuB.png）
-  const uploadResult = await lineService.uploadRichMenuImage(
-    richMenuId,
-    path.resolve(__dirname, "../assets/richmenuB.png")
-  );
-  console.log("Image uploaded for RichMenu B:", uploadResult);
+    const imagePath = path.resolve(__dirname, "../assets/richmenuB.png");
+    console.log("STEP 3: 画像パス:", imagePath);
 
-  // デフォルト設定はAで実施済みの想定
-  return richMenuId;
+    const uploadResult = await lineService.uploadRichMenuImage(richMenuId, imagePath);
+    console.log("STEP 4: RichMenu B 画像アップロード成功:", uploadResult);
+
+    return richMenuId;
+  } catch (error) {
+    console.error("❌ RichMenu B 作成中にエラー:", error.response?.data || error.message || error);
+    throw error;
+  }
 };
 
 // モジュールエクスポート
