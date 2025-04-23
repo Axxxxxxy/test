@@ -6,7 +6,6 @@ const { callDify } = require("./difyService");
 
 // -------------------- リッチメニュー管理 --------------------
 
-// リッチメニュー作成
 const createRichMenu = async (richMenu) => {
   try {
     const response = await axios.post(
@@ -19,14 +18,23 @@ const createRichMenu = async (richMenu) => {
         },
       }
     );
-    return response.data;
+
+    const data = response.data;
+
+    if (!data || !data.richMenuId) {
+      console.error("❗ richMenuIdが取得できません。レスポンス:", data);
+      throw new Error("LINE APIから richMenuId が返されませんでした。");
+    }
+
+    console.log("✅ RichMenu作成成功:", data.richMenuId);
+    return data;
   } catch (error) {
-    console.error("Error creating rich menu:", error);
+    const msg = error?.response?.data || error.message;
+    console.error("❌ LINE createRichMenu エラー:", msg);
     throw error;
   }
 };
 
-// リッチメニュー画像アップロード
 const uploadRichMenuImage = async (richMenuId, imagePath) => {
   try {
     const response = await axios.post(
@@ -41,12 +49,11 @@ const uploadRichMenuImage = async (richMenuId, imagePath) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error uploading rich menu image:", error);
+    console.error("❌ 画像アップロード失敗:", error.response?.data || error.message);
     throw error;
   }
 };
 
-// デフォルトリッチメニューを設定
 const setDefaultRichMenu = async (richMenuId) => {
   try {
     const response = await axios.post(
@@ -61,12 +68,11 @@ const setDefaultRichMenu = async (richMenuId) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error setting default rich menu:", error);
+    console.error("❌ デフォルトリッチメニュー設定失敗:", error.response?.data || error.message);
     throw error;
   }
 };
 
-// リッチメニューのエイリアスを作成
 const createRichMenuAlias = async (aliasId, richMenuId) => {
   try {
     const response = await axios.post(
@@ -84,12 +90,11 @@ const createRichMenuAlias = async (aliasId, richMenuId) => {
     );
     return response.data;
   } catch (error) {
-    console.error(`Error creating alias '${aliasId}':`, error);
+    console.error(`❌ エイリアス作成失敗 (${aliasId}):`, error.response?.data || error.message);
     throw error;
   }
 };
 
-// リッチメニューのエイリアス削除
 const deleteRichMenuAlias = async (aliasId) => {
   try {
     const response = await axios.delete(
@@ -102,12 +107,11 @@ const deleteRichMenuAlias = async (aliasId) => {
     );
     return response.data;
   } catch (error) {
-    console.error(`Error deleting alias '${aliasId}':`, error);
+    console.error(`❌ エイリアス削除失敗 (${aliasId}):`, error.response?.data || error.message);
     throw error;
   }
 };
 
-// LINEへの返信
 const replyMessage = async (body) => {
   try {
     const response = await axios.post(
@@ -122,17 +126,16 @@ const replyMessage = async (body) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error sending message to LINE:", error);
+    console.error("❌ LINEへの返信失敗:", error.response?.data || error.message);
     throw error;
   }
 };
 
-// -------------------- イベントルーティング本体 --------------------
+// -------------------- イベントルーティング --------------------
 
-// LINEイベントを処理する（postback, message）
 const handleLineEvent = async (event) => {
+  // FAQクイックリプライ
   if (event.type === "postback" && event.postback.data.includes("show_faq")) {
-    // クイックリプライ応答
     return replyMessage({
       replyToken: event.replyToken,
       messages: [{
@@ -142,19 +145,11 @@ const handleLineEvent = async (event) => {
           items: [
             {
               type: "action",
-              action: {
-                type: "message",
-                label: "返品について",
-                text: "返品について教えて"
-              }
+              action: { type: "message", label: "返品について", text: "返品について教えて" }
             },
             {
               type: "action",
-              action: {
-                type: "message",
-                label: "支払い方法",
-                text: "支払い方法を教えて"
-              }
+              action: { type: "message", label: "支払い方法", text: "支払い方法を教えて" }
             }
           ]
         }
@@ -162,16 +157,33 @@ const handleLineEvent = async (event) => {
     });
   }
 
-  if (event.type === "message" && event.message.type === "text") {
-    // Difyへ問い合わせて応答を取得 → LINEに返す
-    const aiResponse = await callDify(event.message.text, event.source.userId);
+  // 商品検索 → Flexメッセージ
+  if (event.type === "postback" && event.postback.data === "action=search_product") {
+    try {
+      const carouselJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../assets/json/sample.json"), "utf-8"));
+      return replyMessage({
+        replyToken: event.replyToken,
+        messages: [{
+          type: "flex",
+          altText: "おすすめ商品はこちら！",
+          contents: carouselJson
+        }]
+      });
+    } catch (err) {
+      console.error("❌ Flexメッセージ送信エラー:", err.message);
+      return replyMessage({
+        replyToken: event.replyToken,
+        messages: [{ type: "text", text: "商品の読み込みに失敗しました。" }]
+      });
+    }
+  }
 
+  // テキスト → Dify応答
+  if (event.type === "message" && event.message.type === "text") {
+    const aiResponse = await callDify(event.message.text, event.source.userId);
     return replyMessage({
       replyToken: event.replyToken,
-      messages: [{
-        type: "text",
-        text: aiResponse
-      }]
+      messages: [{ type: "text", text: aiResponse }]
     });
   }
 };
