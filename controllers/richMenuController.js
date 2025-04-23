@@ -20,7 +20,7 @@ const setupRichMenuA = async () => {
     ]
   };
 
-  // リッチメニュー作成
+  // リッチメニューを作成
   const result = await lineService.createRichMenu(richMenu);
   const richMenuId = result.richMenuId;
   console.log("RichMenu A created:", richMenuId);
@@ -32,7 +32,7 @@ const setupRichMenuA = async () => {
   );
   console.log("Image uploaded for RichMenu A:", uploadResult);
 
-  // このリッチメニューをデフォルト設定（全ユーザーに表示）
+  // このリッチメニューをデフォルトとして設定（全ユーザーに表示）
   const defaultResult = await lineService.setDefaultRichMenu(richMenuId);
   console.log("Default RichMenu set for all users (A):", defaultResult);
 
@@ -60,7 +60,7 @@ const setupRichMenuB = async () => {
     ]
   };
 
-  // リッチメニュー作成
+  // リッチメニューを作成
   const result = await lineService.createRichMenu(richMenu);
   const richMenuId = result.richMenuId;
   console.log("RichMenu B created:", richMenuId);
@@ -72,11 +72,11 @@ const setupRichMenuB = async () => {
   );
   console.log("Image uploaded for RichMenu B:", uploadResult);
 
-  // デフォルト設定はA側で実施済みの想定
+  // デフォルト設定はAで実施済みの想定
   return richMenuId;
 };
 
-// エクスポート
+// モジュールエクスポート
 module.exports = {
   setupRichMenuA,
   setupRichMenuB
