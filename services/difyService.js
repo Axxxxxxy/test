@@ -1,10 +1,12 @@
 const axios = require('axios');
 
 // Dify API に質問を送る関数
+const axios = require('axios');
+
 const callDify = async (userMessage, userId) => {
   try {
     const response = await axios.post(
-      `${process.env.DIFY_API_URL}/workflows/run`,  // ここが重要
+      `${process.env.DIFY_API_URL}/workflows/run`,
       {
         inputs: {
           LLM_input: userMessage
@@ -20,9 +22,13 @@ const callDify = async (userMessage, userId) => {
       }
     );
 
-    return response.data.data.outputs.text;
+    // 安全にテキスト抽出
+    const aiText = response?.data?.data?.outputs?.text;
+    return aiText || "申し訳ありません、AIの応答が取得できませんでした。";
+
   } catch (error) {
-    console.error("❌ Dify API 呼び出しエラー:", error.response?.data || error.message);
+    const msg = error?.response?.data?.message || error.message;
+    console.error("❌ Dify API 呼び出しエラー:", msg);
     return "申し訳ありません、ただいまAIの応答に失敗しました。";
   }
 };
