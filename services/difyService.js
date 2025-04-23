@@ -1,23 +1,24 @@
 const axios = require('axios');
 
+// Dify API に質問を送る関数
 const callDify = async (userMessage, userId) => {
-    try {
-      const response = await axios.post(
-        `${process.env.DIFY_API_URL}/workflows/run`,  // ← 🔴 ここが足りてなかった！
-        {
-          inputs: {
-            LLM_input: userMessage
-          },
-          response_mode: 'blocking',
-          user: userId
+  try {
+    const response = await axios.post(
+      `${process.env.DIFY_API_URL}/workflows/run`,  // ここが重要
+      {
+        inputs: {
+          LLM_input: userMessage
         },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.DIFY_API_KEY}`,
-            'Content-Type': 'application/json'
-          }
+        response_mode: 'blocking',
+        user: userId
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.DIFY_API_KEY}`,
+          'Content-Type': 'application/json'
         }
-      );
+      }
+    );
 
     return response.data.data.outputs.text;
   } catch (error) {

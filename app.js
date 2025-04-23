@@ -13,8 +13,7 @@ app.post('/webhook', async (req, res) => {
   try {
     const events = req.body.events || [];
     for (const event of events) {
-      // 各イベントを処理（分岐ロジックはlineService内に集約）
-      await handleLineEvent(event);
+      await handleLineEvent(event); // クイックリプライ or Dify連携処理を呼び出す
     }
     res.status(200).end();
   } catch (error) {
@@ -23,7 +22,7 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
-// A面リッチメニューを作成
+// A面リッチメニュー作成
 app.get('/setup-richmenu-a', async (_, res) => {
   try {
     const id = await setupRichMenuA();
@@ -34,7 +33,7 @@ app.get('/setup-richmenu-a', async (_, res) => {
   }
 });
 
-// B面リッチメニューを作成
+// B面リッチメニュー作成
 app.get('/setup-richmenu-b', async (_, res) => {
   try {
     const id = await setupRichMenuB();
@@ -45,7 +44,7 @@ app.get('/setup-richmenu-b', async (_, res) => {
   }
 });
 
-// A/B面のリッチメニューとエイリアスを作成
+// エイリアス登録含むAB面セットアップ
 app.get('/setup-richmenu-alias', async (_, res) => {
   try {
     const idA = await setupRichMenuA();
