@@ -53,7 +53,8 @@ const setupRichMenuB = async () => {
     areas: [
       { bounds: { x: 0, y: 0, width: 1250, height: 201 }, action: { type: "richmenuswitch", richMenuAliasId: "menu_a", data: "switch_to_service" } },
       { bounds: { x: 1250, y: 0, width: 1250, height: 201 }, action: { type: "richmenuswitch", richMenuAliasId: "menu_b", data: "switch_to_chat" } },
-      { bounds: { x: 0, y: 201, width: 833, height: 743 }, action: { type: "uri", uri: "https://example.com/no-action" } },
+      // 🔽 商品検索ボタン → Flexメッセージ表示のトリガー
+      { bounds: { x: 0, y: 201, width: 833, height: 743 }, action: { type: "postback", data: "action=search_product" } },
       { bounds: { x: 833, y: 201, width: 833, height: 743 }, action: { type: "uri", uri: "https://example.com/no-action" } },
       { bounds: { x: 1666, y: 201, width: 834, height: 743 }, action: { type: "uri", uri: "https://example.com/no-action" } },
       { bounds: { x: 0, y: 944, width: 833, height: 743 }, action: { type: "postback", data: "action=show_faq" } },
