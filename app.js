@@ -1,4 +1,4 @@
-require('dotenv').config();      // 環境変数読み込み
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -8,23 +8,28 @@ const { setupRichMenuA, setupRichMenuB } = require('./controllers/richMenuContro
 const app = express();
 app.use(bodyParser.json());
 
-// LINE から Webhook が届く入り口
+// Webhookエントリポイント（postback・message 両対応）
 app.post('/webhook', async (req, res) => {
-  const events = req.body.events || [];
+  try {
+    const events = req.body.events || [];
 
-  for (const event of events) {
-    // STEP 4: postbackアクション（例：FAQ）を判定
-    if (event.type === 'postback' && event.postback?.data === 'action=show_faq') {
-      await sendQuickReply(event.replyToken);
+    for (const event of events) {
+      console.log("Received event:", JSON.stringify(event)); // ← ログ出力追加
+
+      if (event.type === 'postback' && event.postback?.data === 'action=show_faq') {
+        if (event.replyToken) {
+          await sendQuickReply(event.replyToken);
+        }
+      } else if (event.type === 'message' && event.replyToken) {
+        await sendQuickReply(event.replyToken);
+      }
     }
 
-    // それ以外の通常メッセージ応答
-    else if (event.type === 'message' && event.replyToken) {
-      await sendQuickReply(event.replyToken); // 今回は統一的にクイックリプライを返す仕様
-    }
+    res.status(200).end(); // 必ず200 OKを返す
+  } catch (error) {
+    console.error("Webhook error:", error);
+    res.status(500).end();
   }
-
-  res.status(200).end();
 });
 
 // A面メニューの初期化
