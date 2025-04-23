@@ -1,16 +1,15 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const axios = require('axios'); // ← Makeへの転送で使用
+const axios = require('axios');
 
 const { sendQuickReply } = require('./controllers/messageController');
 const { setupRichMenuA, setupRichMenuB } = require('./controllers/richMenuController');
-const lineService = require('./services/lineService'); // alias登録用に追加
+const lineService = require('./services/lineService');
 
 const app = express();
 app.use(bodyParser.json());
 
-// Webhookエントリポイント（postback・message 両対応）
 app.post('/webhook', async (req, res) => {
   try {
     const events = req.body.events || [];
@@ -18,17 +17,20 @@ app.post('/webhook', async (req, res) => {
     for (const event of events) {
       console.log("Received event:", JSON.stringify(event));
 
-      // ① LINEへの即時応答（replyTokenがあれば）
+      // ✅ FAQ用postbackボタンのみクイックリプライを返す
       if (event.type === 'postback' && event.postback?.data === 'action=show_faq') {
         if (event.replyToken) {
           await sendQuickReply(event.replyToken);
         }
-      } else if (event.type === 'message' && event.replyToken) {
-        await sendQuickReply(event.replyToken);
       }
 
-      // ② MakeのWebhookに中継転送
-      await axios.post('https://hook.us2.make.com/xj6w0fnoiefa8o5xafdxqi12wstk5b1y', event); // ← 差し替えてください
+      // ✅ 通常メッセージはここで何も返さない（反応しない）
+      // if (event.type === 'message' && event.replyToken) {
+      //   await sendQuickReply(event.replyToken);
+      // }
+
+      // ✅ Makeへの転送（中継）
+      await axios.post('https://hook.us2.make.com/xj6w0fnoiefa8o5xafdxqi12wstk5b1y', event);
     }
 
     res.status(200).end();
@@ -38,7 +40,6 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
-// A面メニューの初期化
 app.get('/setup-richmenu-a', async (_, res) => {
   try {
     const id = await setupRichMenuA();
@@ -49,7 +50,6 @@ app.get('/setup-richmenu-a', async (_, res) => {
   }
 });
 
-// B面メニューの初期化
 app.get('/setup-richmenu-b', async (_, res) => {
   try {
     const id = await setupRichMenuB();
@@ -60,7 +60,6 @@ app.get('/setup-richmenu-b', async (_, res) => {
   }
 });
 
-// A/B面の作成＋エイリアス登録を同時に行う
 app.get('/setup-richmenu-alias', async (_, res) => {
   try {
     const idA = await setupRichMenuA();
