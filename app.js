@@ -1,10 +1,11 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
+const axios = require('axios'); // ← Makeへの転送で使用
 
 const { sendQuickReply } = require('./controllers/messageController');
 const { setupRichMenuA, setupRichMenuB } = require('./controllers/richMenuController');
-const lineService = require('./services/lineService'); // ← alias登録用に追加
+const lineService = require('./services/lineService'); // alias登録用に追加
 
 const app = express();
 app.use(bodyParser.json());
@@ -15,8 +16,9 @@ app.post('/webhook', async (req, res) => {
     const events = req.body.events || [];
 
     for (const event of events) {
-      console.log("Received event:", JSON.stringify(event)); // ログ出力
+      console.log("Received event:", JSON.stringify(event));
 
+      // ① LINEへの即時応答（replyTokenがあれば）
       if (event.type === 'postback' && event.postback?.data === 'action=show_faq') {
         if (event.replyToken) {
           await sendQuickReply(event.replyToken);
@@ -24,11 +26,14 @@ app.post('/webhook', async (req, res) => {
       } else if (event.type === 'message' && event.replyToken) {
         await sendQuickReply(event.replyToken);
       }
+
+      // ② MakeのWebhookに中継転送
+      await axios.post('https://hook.us2.make.com/xj6w0fnoiefa8o5xafdxqi12wstk5b1y', event); // ← 差し替えてください
     }
 
-    res.status(200).end(); // LINEに必ず応答
+    res.status(200).end();
   } catch (error) {
-    console.error("Webhook error:", error);
+    console.error("Webhook error:", error.response?.data || error.message);
     res.status(500).end();
   }
 });
