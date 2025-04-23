@@ -25,7 +25,7 @@ const setupRichMenuA = async () => {
     const richMenuId = result.richMenuId;
     console.log("STEP 2: RichMenu A 作成完了:", richMenuId);
 
-    const imagePath = path.resolve(__dirname, "../assets/richmenuA.png");
+    const imagePath = path.resolve(__dirname, "../assets/richmenu_a-min.png");
     console.log("STEP 3: 画像パス:", imagePath);
 
     const uploadResult = await lineService.uploadRichMenuImage(richMenuId, imagePath);
@@ -67,7 +67,7 @@ const setupRichMenuB = async () => {
     const richMenuId = result.richMenuId;
     console.log("STEP 2: RichMenu B 作成完了:", richMenuId);
 
-    const imagePath = path.resolve(__dirname, "../assets/richmenuB.png");
+    const imagePath = path.resolve(__dirname, "../assets/richmenu_b-min.png");
     console.log("STEP 3: 画像パス:", imagePath);
 
     const uploadResult = await lineService.uploadRichMenuImage(richMenuId, imagePath);
