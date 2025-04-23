@@ -1,25 +1,7 @@
 const lineService = require("../services/lineService");
-// messageController.js
-const { saveConversationLog } = require("./logService");
-// messageController.js
 const { saveConversationLog } = require("./logService");
 
-// メッセージ受信処理内などに追加
-await saveConversationLog({
-  userId,
-  category: "FAQ", // or "その他" or テキスト分類
-  messageText: event.message.text,
-  botReply: replyText,
-});
-
-// メッセージ受信処理内などに追加
-await saveConversationLog({
-  userId,
-  category: "FAQ", // or "その他" or テキスト分類
-  messageText: event.message.text,
-  botReply: replyText,
-});
-
+// クイックリプライ送信用関数
 const sendQuickReply = async (replyToken) => {
   const quickReply = {
     replyToken,
@@ -29,8 +11,14 @@ const sendQuickReply = async (replyToken) => {
         text: "ご質問は何ですか？",
         quickReply: {
           items: [
-            { type: "action", action: { type: "message", label: "支払い方法", text: "支払い方法" } },
-            { type: "action", action: { type: "message", label: "返品ポリシー", text: "返品ポリシー" } },
+            {
+              type: "action",
+              action: { type: "message", label: "支払い方法", text: "支払い方法" },
+            },
+            {
+              type: "action",
+              action: { type: "message", label: "返品ポリシー", text: "返品ポリシー" },
+            },
           ],
         },
       },
@@ -39,4 +27,21 @@ const sendQuickReply = async (replyToken) => {
   await lineService.replyMessage(quickReply);
 };
 
-module.exports = { sendQuickReply };
+// Botのメッセージ応答処理内で呼び出す用（例）
+const handleMessage = async (event, replyText) => {
+  const userId = event.source.userId;
+  const messageText = event.message.text;
+
+  // 会話ログ保存
+  await saveConversationLog({
+    userId,
+    category: "FAQ", // 仮で「FAQ」だが分類ロジックあれば置き換え
+    messageText,
+    botReply: replyText,
+  });
+};
+
+module.exports = {
+  sendQuickReply,
+  handleMessage, // ← Botからの返信処理などで使う用
+};
