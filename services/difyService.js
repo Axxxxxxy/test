@@ -1,8 +1,6 @@
-const axios = require('axios');
+const axios = require('axios'); // ← 1回だけ宣言でOK！
 
 // Dify API に質問を送る関数
-const axios = require('axios');
-
 const callDify = async (userMessage, userId) => {
   try {
     const response = await axios.post(
