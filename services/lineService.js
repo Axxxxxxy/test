@@ -83,10 +83,53 @@ const replyMessage = async (quickReply) => {
   }
 };
 
+// 指定したaliasIdとrichMenuIdを結びつける（エイリアス登録）
+const createRichMenuAlias = async (aliasId, richMenuId) => {
+  try {
+    const response = await axios.post(
+      "https://api.line.me/v2/bot/richmenu/alias",
+      {
+        richMenuAliasId: aliasId,
+        richMenuId: richMenuId
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${config.channelAccessToken}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error creating alias '${aliasId}':`, error);
+    throw error;
+  }
+};
+
+// 指定したaliasIdを削除（既存のものがある場合は事前に削除が推奨）
+const deleteRichMenuAlias = async (aliasId) => {
+  try {
+    const response = await axios.delete(
+      `https://api.line.me/v2/bot/richmenu/alias/${aliasId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${config.channelAccessToken}`
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting alias '${aliasId}':`, error);
+    throw error;
+  }
+};
+
 // 必要な関数を外部に公開
 module.exports = {
   createRichMenu,
   uploadRichMenuImage,
   setDefaultRichMenu,
-  replyMessage
+  replyMessage,
+  createRichMenuAlias,
+  deleteRichMenuAlias
 };
