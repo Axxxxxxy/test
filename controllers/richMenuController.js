@@ -1,7 +1,7 @@
 const path = require("path");
 const lineService = require("../services/lineService");
 
-// A面のリッチメニュー作成
+// A面のリッチメニュー作成（そのまま）
 const setupRichMenuA = async () => {
   console.log("STEP 1: リッチメニューA作成処理 開始");
 
@@ -26,26 +26,23 @@ const setupRichMenuA = async () => {
     console.log("STEP 2: RichMenu A 作成完了:", richMenuId);
 
     const imagePath = path.resolve(__dirname, "../assets/richmenu_a-min.png");
-    console.log("STEP 3: 画像パス:", imagePath);
-
     const uploadResult = await lineService.uploadRichMenuImage(richMenuId, imagePath);
-    console.log("STEP 4: RichMenu A 画像アップロード成功:", uploadResult);
+    console.log("STEP 3: A面画像アップロード成功:", uploadResult);
 
     const defaultResult = await lineService.setDefaultRichMenu(richMenuId);
-    console.log("STEP 5: RichMenu A デフォルト設定完了:", defaultResult);
+    console.log("STEP 4: A面をデフォルトに設定:", defaultResult);
 
-    // ✅ A面にエイリアスもつける
     await lineService.createRichMenuAlias("menu_a", richMenuId);
-    console.log("STEP 6: menu_a エイリアス設定完了");
+    console.log("STEP 5: A面エイリアス menu_a 設定完了");
 
     return richMenuId;
   } catch (error) {
-    console.error("❌ RichMenu A 作成中にエラー:", error.response?.data || error.message || error);
+    console.error("❌ RichMenu A エラー:", error.response?.data || error.message || error);
     throw error;
   }
 };
 
-// B面のリッチメニュー作成
+// B面のリッチメニュー作成（商品検索をpostbackに）
 const setupRichMenuB = async () => {
   console.log("STEP 1: リッチメニューB作成処理 開始");
 
@@ -55,9 +52,14 @@ const setupRichMenuB = async () => {
     size: { width: 2500, height: 1686 },
     selected: true,
     areas: [
+      // 上部タブ切替
       { bounds: { x: 0, y: 0, width: 1250, height: 201 }, action: { type: "richmenuswitch", richMenuAliasId: "menu_a", data: "switch_to_service" } },
       { bounds: { x: 1250, y: 0, width: 1250, height: 201 }, action: { type: "richmenuswitch", richMenuAliasId: "menu_b", data: "switch_to_chat" } },
+
+      // 商品検索（postbackでFlexトリガー）
       { bounds: { x: 0, y: 201, width: 833, height: 743 }, action: { type: "postback", data: "action=search_product" } },
+
+      // 他エリアは一旦無効化（uriでno-actionに）
       { bounds: { x: 833, y: 201, width: 833, height: 743 }, action: { type: "uri", uri: "https://example.com/no-action" } },
       { bounds: { x: 1666, y: 201, width: 834, height: 743 }, action: { type: "uri", uri: "https://example.com/no-action" } },
       { bounds: { x: 0, y: 944, width: 833, height: 743 }, action: { type: "postback", data: "action=show_faq" } },
@@ -72,18 +74,15 @@ const setupRichMenuB = async () => {
     console.log("STEP 2: RichMenu B 作成完了:", richMenuId);
 
     const imagePath = path.resolve(__dirname, "../assets/richmenu_b-min.png");
-    console.log("STEP 3: 画像パス:", imagePath);
-
     const uploadResult = await lineService.uploadRichMenuImage(richMenuId, imagePath);
-    console.log("STEP 4: RichMenu B 画像アップロード成功:", uploadResult);
+    console.log("STEP 3: B面画像アップロード成功:", uploadResult);
 
-    // ✅ B面にエイリアスをつける ←← これが超大事！
     await lineService.createRichMenuAlias("menu_b", richMenuId);
-    console.log("STEP 5: menu_b エイリアス設定完了");
+    console.log("STEP 4: B面エイリアス menu_b 設定完了");
 
     return richMenuId;
   } catch (error) {
-    console.error("❌ RichMenu B 作成中にエラー:", error.response?.data || error.message || error);
+    console.error("❌ RichMenu B エラー:", error.response?.data || error.message || error);
     throw error;
   }
 };
