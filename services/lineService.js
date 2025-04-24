@@ -3,6 +3,7 @@ const config = require("../config/config");
 const fs = require("fs");
 const path = require("path");
 const { callDify } = require("./difyService");
+const { handleMessage } = require("../controllers/messageController"); // ✅ 追加！
 
 // -------------------- リッチメニュー管理 --------------------
 
@@ -178,9 +179,13 @@ const handleLineEvent = async (event) => {
     }
   }
 
-  // テキスト → Dify応答
+  // テキスト → Dify応答 → ログ保存
   if (event.type === "message" && event.message.type === "text") {
     const aiResponse = await callDify(event.message.text, event.source.userId);
+
+    // ✅ 会話ログ保存をここで呼び出す
+    await handleMessage(event, aiResponse);
+
     return replyMessage({
       replyToken: event.replyToken,
       messages: [{ type: "text", text: aiResponse }]
