@@ -10,7 +10,7 @@ async function saveConversationLog({ userId, category, messageText, botReply }) 
   };
 
   try {
-    await axios.post("https://script.google.com/macros/s/AKfycbzZapLZm99lVDdF2KWlcjQmY_u-1E-ITOCWa1s4oskC35gavb6uCUoEsImaAEww7R2Uqg/exec", payload, {
+    await axios.post("https://script.google.com/macros/s/AKfycbwP93HLd-SvRq5c9J-UsmTlR0VZUeeLBhAJkAaGhDJQU4Htmp_jvwkhnhZ3UKvD4LF_Ww/exec", payload, {
       headers: { "Content-Type": "application/json" },
     });
     console.log("✅ 会話ログ送信完了");
