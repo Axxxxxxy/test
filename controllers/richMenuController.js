@@ -77,7 +77,7 @@ const setupRichMenuB = async () => {
 
     return richMenuId;
   } catch (error) {
-    console.error("❌ RichMenu B エラー:", error.response?.data || error.message || error);
+    console.error("RichMenu B エラー:", error.response?.data || error.message || error);
     throw error;
   }
 };

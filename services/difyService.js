@@ -26,7 +26,7 @@ const callDify = async (userMessage, userId) => {
 
   } catch (error) {
     const msg = error?.response?.data?.message || error.message;
-    console.error("❌ Dify API 呼び出しエラー:", msg);
+    console.error("Dify API 呼び出しエラー:", msg);
     return "申し訳ありません、ただいまAIの応答に失敗しました。";
   }
 };

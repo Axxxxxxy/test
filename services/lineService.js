@@ -27,11 +27,11 @@ const createRichMenu = async (richMenu) => {
       throw new Error("LINE APIから richMenuId が返されませんでした。");
     }
 
-    console.log("✅ RichMenu作成成功:", data.richMenuId);
+    console.log("RichMenu作成成功:", data.richMenuId);
     return data;
   } catch (error) {
     const msg = error?.response?.data || error.message;
-    console.error("❌ LINE createRichMenu エラー:", msg);
+    console.error("LINE createRichMenu エラー:", msg);
     throw error;
   }
 };
@@ -50,7 +50,7 @@ const uploadRichMenuImage = async (richMenuId, imagePath) => {
     );
     return response.data;
   } catch (error) {
-    console.error("❌ 画像アップロード失敗:", error.response?.data || error.message);
+    console.error("画像アップロード失敗:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -69,7 +69,7 @@ const setDefaultRichMenu = async (richMenuId) => {
     );
     return response.data;
   } catch (error) {
-    console.error("❌ デフォルトリッチメニュー設定失敗:", error.response?.data || error.message);
+    console.error("デフォルトリッチメニュー設定失敗:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -91,7 +91,7 @@ const createRichMenuAlias = async (aliasId, richMenuId) => {
     );
     return response.data;
   } catch (error) {
-    console.error(`❌ エイリアス作成失敗 (${aliasId}):`, error.response?.data || error.message);
+    console.error(`エイリアス作成失敗 (${aliasId}):`, error.response?.data || error.message);
     throw error;
   }
 };
@@ -108,7 +108,7 @@ const deleteRichMenuAlias = async (aliasId) => {
     );
     return response.data;
   } catch (error) {
-    console.error(`❌ エイリアス削除失敗 (${aliasId}):`, error.response?.data || error.message);
+    console.error(`エイリアス削除失敗 (${aliasId}):`, error.response?.data || error.message);
     throw error;
   }
 };
@@ -127,7 +127,7 @@ const replyMessage = async (body) => {
     );
     return response.data;
   } catch (error) {
-    console.error("❌ LINEへの返信失敗:", error.response?.data || error.message);
+    console.error("LINEへの返信失敗:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -171,7 +171,7 @@ const handleLineEvent = async (event) => {
         }]
       });
     } catch (err) {
-      console.error("❌ Flexメッセージ送信エラー:", err.message);
+      console.error("Flexメッセージ送信エラー:", err.message);
       return replyMessage({
         replyToken: event.replyToken,
         messages: [{ type: "text", text: "商品の読み込みに失敗しました。" }]
