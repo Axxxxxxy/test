@@ -108,7 +108,7 @@ const handleLineEvent = async (event) => {
         await handleMessage(event, aiResponse); // ログ保存
         await pushMessage(source.userId, aiResponse); // 本回答をPush送信
       })
-      .catch((err) => {
+      .catch(async (err) => {
         console.error("Dify失敗:", err.message);
         await pushMessage(source.userId, "申し訳ありません、AIの応答に失敗しました。");
       });
