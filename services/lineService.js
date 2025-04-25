@@ -119,11 +119,6 @@ const handleLineEvent = async (event) => {
 
 module.exports = {
   handleLineEvent,
-  createRichMenu,
-  uploadRichMenuImage,
-  setDefaultRichMenu,
   replyMessage,
-  pushMessage,
-  createRichMenuAlias,
-  deleteRichMenuAlias
+  pushMessage
 };
