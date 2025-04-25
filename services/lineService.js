@@ -3,84 +3,16 @@ const config = require("../config/config");
 const fs = require("fs");
 const path = require("path");
 const { callDify } = require("./difyService");
-const { handleMessage } = require("../controllers/messageController"); // ✅ 追加！
+const { handleMessage } = require("../controllers/messageController");
 
-// -------------------- リッチメニュー管理 --------------------
-
-const createRichMenu = async (richMenu) => {
+// --- pushMessageを追加 ---
+const pushMessage = async (userId, text) => {
   try {
-    const response = await axios.post(
-      "https://api.line.me/v2/bot/richmenu",
-      richMenu,
+    return await axios.post(
+      "https://api.line.me/v2/bot/message/push",
       {
-        headers: {
-          Authorization: `Bearer ${config.channelAccessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const data = response.data;
-
-    if (!data || !data.richMenuId) {
-      console.error("❗ richMenuIdが取得できません。レスポンス:", data);
-      throw new Error("LINE APIから richMenuId が返されませんでした。");
-    }
-
-    console.log("RichMenu作成成功:", data.richMenuId);
-    return data;
-  } catch (error) {
-    const msg = error?.response?.data || error.message;
-    console.error("LINE createRichMenu エラー:", msg);
-    throw error;
-  }
-};
-
-const uploadRichMenuImage = async (richMenuId, imagePath) => {
-  try {
-    const response = await axios.post(
-      `https://api-data.line.me/v2/bot/richmenu/${richMenuId}/content`,
-      fs.readFileSync(imagePath),
-      {
-        headers: {
-          Authorization: `Bearer ${config.channelAccessToken}`,
-          "Content-Type": "image/png",
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error("画像アップロード失敗:", error.response?.data || error.message);
-    throw error;
-  }
-};
-
-const setDefaultRichMenu = async (richMenuId) => {
-  try {
-    const response = await axios.post(
-      `https://api.line.me/v2/bot/user/all/richmenu/${richMenuId}`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${config.channelAccessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error("デフォルトリッチメニュー設定失敗:", error.response?.data || error.message);
-    throw error;
-  }
-};
-
-const createRichMenuAlias = async (aliasId, richMenuId) => {
-  try {
-    const response = await axios.post(
-      "https://api.line.me/v2/bot/richmenu/alias",
-      {
-        richMenuAliasId: aliasId,
-        richMenuId: richMenuId,
+        to: userId,
+        messages: [{ type: "text", text }]
       },
       {
         headers: {
@@ -89,27 +21,8 @@ const createRichMenuAlias = async (aliasId, richMenuId) => {
         },
       }
     );
-    return response.data;
   } catch (error) {
-    console.error(`エイリアス作成失敗 (${aliasId}):`, error.response?.data || error.message);
-    throw error;
-  }
-};
-
-const deleteRichMenuAlias = async (aliasId) => {
-  try {
-    const response = await axios.delete(
-      `https://api.line.me/v2/bot/richmenu/alias/${aliasId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${config.channelAccessToken}`,
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error(`エイリアス削除失敗 (${aliasId}):`, error.response?.data || error.message);
-    throw error;
+    console.error("LINEへのPush失敗:", error.response?.data || error.message);
   }
 };
 
@@ -179,17 +92,28 @@ const handleLineEvent = async (event) => {
     }
   }
 
-  // テキスト → Dify応答 → ログ保存
+  // テキスト → 即時返信 → 非同期Dify → pushで送信
   if (event.type === "message" && event.message.type === "text") {
-    const aiResponse = await callDify(event.message.text, event.source.userId);
+    const { replyToken, source, message } = event;
 
-    // ✅ 会話ログ保存をここで呼び出す
-    await handleMessage(event, aiResponse);
-
-    return replyMessage({
-      replyToken: event.replyToken,
-      messages: [{ type: "text", text: aiResponse }]
+    // ① 即時仮返信
+    replyMessage({
+      replyToken,
+      messages: [{ type: "text", text: "AIが回答を作成中です…" }]
     });
+
+    // ② 非同期処理
+    callDify(message.text, source.userId)
+      .then(async (aiResponse) => {
+        await handleMessage(event, aiResponse); // ログ保存
+        await pushMessage(source.userId, aiResponse); // 本回答をPush送信
+      })
+      .catch((err) => {
+        console.error("Dify失敗:", err.message);
+        await pushMessage(source.userId, "申し訳ありません、AIの応答に失敗しました。");
+      });
+
+    return; // 即応済みなので終了
   }
 };
 
@@ -199,6 +123,7 @@ module.exports = {
   uploadRichMenuImage,
   setDefaultRichMenu,
   replyMessage,
+  pushMessage,
   createRichMenuAlias,
   deleteRichMenuAlias
 };
