@@ -22,12 +22,12 @@ const callDify = async (userMessage, userId) => {
 
     // 安全にテキスト抽出
     const aiText = response?.data?.data?.outputs?.text;
-    return aiText || "該当内容については、当窓口では対応が難しい内容でございます。詳細はオペレーター（9:00〜20:00／年中無休）までお問い合わせください。";
+    return aiText || "当窓口では対応が難しい内容でございます。詳細はオペレーター（9:00〜20:00／年中無休）までお問い合わせください。";
 
   } catch (error) {
     const msg = error?.response?.data?.message || error.message;
     console.error("Dify API 呼び出しエラー:", msg);
-    return "該当内容については、当窓口では対応が難しい内容でございます。詳細はオペレーター（9:00〜20:00／年中無休）までお問い合わせください。";
+    return "当窓口では対応が難しい内容でございます。詳細はオペレーター（9:00〜20:00／年中無休）までお問い合わせください。";
   }
 };
 
