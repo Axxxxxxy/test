@@ -109,8 +109,8 @@ const handleLineEvent = async (event) => {
         await pushMessage(source.userId, aiResponse); // 本回答をPush送信
       })
       .catch(async (err) => {
-        console.error("Dify失敗:", err.message);
-        await pushMessage(source.userId, "申し訳ありません、AIの応答に失敗しました。");
+        console.error("Dify解読不可:", err.message);
+        await pushMessage(source.userId, "該当内容については、当窓口では対応が難しい内容でございます。詳細はオペレーター（9:00〜20:00／年中無休）までお問い合わせください。");
       });
 
     return; // 即応済みなので終了
